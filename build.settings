@@ -1,0 +1,32 @@
+settings = 
+{
+  plugins =
+  {
+    ["plugin.bit"] =
+    {
+      publisherId = "com.coronalabs"
+    },
+  },
+  window =
+  {
+    defaultMode = 'normal',
+    defaultViewWidth = 480,
+    defaultViewHeight = 480 * 16 / 9,
+    resizable = true,
+    minViewWidth = 480,
+    minViewHeight = 480 * 16 / 9,
+    enableCloseButton = true,
+    enableMinimizeButton = true,
+    suspendWhenMinimized = true,
+    titleText =
+    {
+      default = 'Tetra Loops'
+    }
+  },
+  excludeFiles =
+  {
+    all = {'.gitignore','*.js','*.css','*.html','*.txt','*.pdn','Icon256.*','sound.unused/*','img/*','*.keystore','*.md','*.bat'},
+    android = {'*.ico'},
+    win32 = {'Icon-*.png'}
+  }
+}
