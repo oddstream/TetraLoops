@@ -3,8 +3,8 @@
 local bit = require('plugin.bit')
 local bezier = require('Bezier')
 
-local PLACE_COIN_CHANCE = 0.1
-local SHOW_SQUARE = true
+local PLACE_COIN_CHANCE = 0.2
+local SHOW_SQUARE = false
 
 local Cell = {
   -- prototype object
@@ -40,8 +40,8 @@ function Cell:new(grid, x, y)
   o.center = {x=(x*dim.Q) - dim.Q + dim.Q50, y=(y*dim.Q) - dim.Q + dim.Q50}
 
   -- "These coordinates will automatically be re-centered about the center of the polygon."
-  o.square = display.newPolygon(o.grid.gridGroup, o.center.x, o.center.y, dim.cellSquare)
-  o.square:setFillColor(0,0,0)
+  o.square = display.newPolygon(o.grid.group, o.center.x, o.center.y, dim.cellSquare)
+  o.square:setFillColor(0,0,0) -- if alpha == 0, we don't get tap events
   if SHOW_SQUARE then
     o.square:setStrokeColor(0.1)
     o.square.strokeWidth = 2
@@ -203,6 +203,7 @@ function Cell:colorComplete()
 end
 
 function Cell:rotate(dir)
+
   local function afterRotate()
     self:createGraphics(1)
     if self.grid:isSectionComplete(self.section) then
@@ -237,15 +238,17 @@ end
 
 function Cell:tap(event)
   -- implement table listener for tap events
-  -- print('tap', event.numTaps, self.x, self.y, self.coins, self.bitCount)
-  self:rotate('clockwise')
+  -- print('tap', event.phase, event.numTaps, self.x, self.y, self.coins, self.bitCount)
+  if self.grid:isComplete() then
+    self.grid:reset()
+  else
+    self:rotate('clockwise')
+  end
   return true
 end
 
-function Cell:createGraphics(alpha) -- TODO alpha
+function Cell:createGraphics(alpha)
   local dim = dimensions
-
-  alpha = alpha or 1.0
 
   if 0 == self.coins then
     return
@@ -272,7 +275,7 @@ function Cell:createGraphics(alpha) -- TODO alpha
   -- center the group on the center of the hexagon, otherwise it's at 0,0
   self.grp.x = self.center.x
   self.grp.y = self.center.y
-  self.grid.shapesGroup:insert(self.grp)
+  self.grid.group:insert(self.grp)
 
   self.grpObjects = {}
 
@@ -284,8 +287,8 @@ function Cell:createGraphics(alpha) -- TODO alpha
     local cd = table.find(dim.cellData, function(b) return self.coins == b.bit end)
     assert(cd)
     local line = display.newLine(self.grp,
-      0,
-      0,
+      cd.c2eX / 2,
+      cd.c2eY / 2,
       cd.c2eX,
       cd.c2eY)
     line.strokeWidth = sWidth
@@ -301,8 +304,8 @@ function Cell:createGraphics(alpha) -- TODO alpha
     local circle = display.newCircle(self.grp, 0, 0, dim.Q20)
     circle.strokeWidth = sWidth
     circle:setStrokeColor(unpack(self.color))
-    circle.alpha = alpha
     circle:setFillColor(0,0,0)
+    circle.alpha = alpha
     table.insert(self.grpObjects, circle)
 
   else
@@ -338,6 +341,13 @@ function Cell:createGraphics(alpha) -- TODO alpha
         table.insert(arr, {x=cd.c2eX, y=cd.c2eY})
       end
     end
+--[[
+    for n = 1, #arr do
+      local circ = display.newCircle(self.grp, arr[n].x, arr[n].y, dim.Q20)
+      circ:setFillColor(unpack(self.color))
+      table.insert(self.grpObjects, circ)
+    end
+]]
     -- close path for better aesthetics
     if self.bitCount > 2 then
       table.insert(arr, arr[1])
@@ -350,7 +360,7 @@ function Cell:createGraphics(alpha) -- TODO alpha
       local cp1 = {x=(arr[n].x)/av, y=(arr[n].y)/av}
       local cp2 = {x=(arr[n+1].x)/av, y=(arr[n+1].y)/av}
       local curve = bezier.new(
-        arr[n].x, arr[n].y, 
+        arr[n].x, arr[n].y,
         cp1.x, cp1.y,
         cp2.x, cp2.y,
         arr[n+1].x, arr[n+1].y)
@@ -368,6 +378,7 @@ function Cell:createGraphics(alpha) -- TODO alpha
       endcap.alpha = alpha
       table.insert(self.grpObjects, endcap)
     end
+
   end
 end
 
@@ -382,7 +393,7 @@ end
 function Cell:fadeOut(fn)
   if self.grpObjects then
     for _, o in ipairs(self.grpObjects) do
-      transition.fadeOut(o, {time=1000, onComplete=fn});
+      transition.fadeOut(o, {time=500, onComplete=fn});
     end
   end
 end

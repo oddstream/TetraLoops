@@ -10,28 +10,25 @@ print(physics.engineVersion)
 
 local composer = require('composer')
 local scene = composer.newScene()
-
 local widget = require('widget')
+
 widget.setTheme('widget_theme_android_holo_dark')
 
 local asteroidsTable = {}
 
-local backGroup, gridGroup, shapesGroup
+-- local scrollView = nil
+local gridGroup = nil
+local backGroup = nil
 
 local astroLoopTimer = nil
-local shiftLoopTimer = nil
 
 local grid = nil
 
 local function createAsteroid2(x, y, color)
-  local newAsteroid = display.newCircle(backGroup, x, y, math.random(10))
+  local newAsteroid = display.newCircle(backGroup, x, y, math.random(6))
   table.insert(asteroidsTable, newAsteroid)
   physics.addBody(newAsteroid, 'dynamic', { density=0.3, radius=10, bounce=0.9 } )
-  if grid.complete then
-    newAsteroid:setLinearVelocity( math.random( -100,100 ), math.random( -100,100 ) )
-  else
-    newAsteroid:setLinearVelocity( math.random( -25,25 ), math.random( -25,25 ) )
-  end
+  newAsteroid:setLinearVelocity( math.random( -25,25 ), math.random( -25,25 ) )
   newAsteroid:setFillColor(unpack(color))
 end
 
@@ -58,12 +55,6 @@ local function astroLoop()
   end
 end
 
-local function shiftLoop()
-  if grid:isRowEmpty(grid.height) then
-    grid:rollDown()
-  end
-end
-
 function scene:create(event)
   local sceneGroup = self.view
 
@@ -73,29 +64,35 @@ function scene:create(event)
   backGroup = display.newGroup()
   sceneGroup:insert(backGroup)
 
-  shapesGroup = display.newGroup()
-  sceneGroup:insert(shapesGroup)
+--[[
+  scrollView = widget.newScrollView({
+    top = 0,
+    left = 0,
+    width = display.actualContentWidth,
+    height = display.actualContentHeight,
+    -- isBounceEnabled = false,
+    backgroundColor = {0,0,0},
+  })
+  -- scrollView.x = 0
+  -- scrollView.y = 0
+  -- scrollView.anchorX = 0
+  -- scrollView.anchorY = 0
+  sceneGroup:insert(scrollView)
+]]
+  local QQQ = 150
 
-  local numX = 5
-  if display.pixelWidth > 2000 then
-    numX = 6
-  elseif display.pixelWidth < 1000 then
-    numX = 4
-  end
-  local numY = math.floor(numX*1.777778)
+  local numX = math.floor(display.actualContentWidth / QQQ)
+  local numY = math.floor(display.actualContentHeight / QQQ)
 
-  dimensions = Dim:new( math.floor(display.viewableContentWidth/numX) )
+  dimensions = Dim:new( QQQ )
+  -- dimensions = Dim:new( math.floor(display.viewableContentWidth/numX) )
 
   -- for debugging the gaps between cells problem
   -- display.setDefault('background', 0.5,0.5,0.5)
 
-  grid = Grid:new(gridGroup, shapesGroup, numX, numY)
+  grid = Grid:new(gridGroup, numX, numY)
 
   grid:newLevel()
-
-  local function gridReset()
-    grid:reset() -- calls fadeIn()
-  end
 
 end
 
@@ -105,11 +102,10 @@ function scene:show(event)
 
   if phase == 'will' then
     -- Code here runs when the scene is still off screen (but is about to come on screen)
-    astroLoopTimer = timer.performWithDelay(5000, astroLoop, 0)
-    shiftLoopTimer = timer.performWithDelay(5000, shiftLoop, 0)
-
+    astroLoop()
   elseif phase == 'did' then
     -- Code here runs when the scene is entirely on screen
+    astroLoopTimer = timer.performWithDelay(10000, astroLoop, 0)
   end
 end
 
@@ -120,10 +116,9 @@ function scene:hide(event)
   if phase == 'will' then
     -- Code here runs when the scene is on screen (but is about to go off screen)
     if astroLoopTimer then timer.cancel(astroLoopTimer) end
-    if shiftLoopTimer then timer.cancel(shiftLoopTimer) end
   elseif phase == 'did' then
     -- Code here runs immediately after the scene goes entirely off screen
-    composer.removeScene('MyNet')
+    composer.removeScene('Tetra')
   end
 end
 

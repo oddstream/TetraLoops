@@ -6,26 +6,22 @@ local Cell = require 'Cell'
 
 local Grid = {
   -- prototype object
-  gridGroup = nil,
-  shapeGroup = nil,
+  group = nil,
   cells = nil,    -- array of Cell objects
   width = nil,      -- number of columns
   height = nil,      -- number of rows
-
-  complete = nil,
 
   tapSound = nil,
   sectionSound = nil,
   lockedSound = nil,
 }
 
-function Grid:new(gridGroup, shapesGroup, width, height)
+function Grid:new(group, width, height)
   local o = {}
   self.__index = self
   setmetatable(o, self)
 
-  o.gridGroup = gridGroup
-  o.shapesGroup = shapesGroup
+  o.group = group
 
   o.cells = {}
   o.width = width
@@ -40,11 +36,9 @@ function Grid:new(gridGroup, shapesGroup, width, height)
 
   o:linkCells2()
 
-  o.complete = false
-
-  o.tapSound = audio.loadSound('sound56.wav')
-  o.sectionSound = audio.loadSound('sound63.wav')
-  o.lockedSound = audio.loadSound('sound61.wav')
+  -- o.tapSound = audio.loadSound('sound56.wav')
+  -- o.sectionSound = audio.loadSound('sound63.wav')
+  -- o.lockedSound = audio.loadSound('sound61.wav')
 
   return o
 end
@@ -74,11 +68,9 @@ function Grid:newLevel()
   self:placeCoins()
   self:colorCoins()
   self:jumbleCoins()
-  self:createGraphics(0)
+  self:createGraphics()
 
   self:fadeIn()
-
-  self.complete = false
 end
 
 function Grid:sound(type)
@@ -141,7 +133,7 @@ function Grid:colorCoins()
     {46,139,87}, -- SeaGreen
     {128,128,128},
   }
---[[
+
   local colorsPink = {
     {255,192,203}, -- Pink
     {255,105,180}, -- HotPink
@@ -151,7 +143,7 @@ function Grid:colorCoins()
 
     {238,130,238}, -- Violet
   }
-]]
+
   local colorsBlue = {
     {25,25,112},
     {65,105,225},
@@ -160,7 +152,7 @@ function Grid:colorCoins()
     {176,196,222},
     {0,0,205},
   }
---[[
+
   local colorsOrange = {
     {255,165,0},
     {255,69,0},
@@ -169,7 +161,7 @@ function Grid:colorCoins()
     {255,99,71},
     {128,128,128},
   }
-]]
+
   local colorsGray = {
     {128,128,128},
     {192,192,192},
@@ -177,13 +169,15 @@ function Grid:colorCoins()
     {220,220,220},
     {49,79,79},
   }
+
   local colorsAll = {
     colorsGreen,
     colorsBlue,
-    -- colorsOrange,
-    -- colorsPink,
+    colorsOrange,
+    colorsPink,
     colorsGray,
   }
+
   local colors = colorsAll[math.random(#colorsAll)]
   for _,row in ipairs(colors) do
     for i = 1,3 do
@@ -210,13 +204,8 @@ function Grid:jumbleCoins()
 end
 
 function Grid:isComplete()
-  for n = 1, #self.cells do
-    if not self.cells[n]:isComplete() then
-      return false
-    end
-  end
-  self.complete = true
-  return true
+  local arr = table.filter(self.cells, function(c) return c.section ~= 0 end)
+  return #arr == 0
 end
 
 function Grid:isSectionComplete(section)
@@ -233,41 +222,15 @@ function Grid:isSectionComplete(section)
 end
 
 function Grid:removeSection(section)
+  -- print('remove section', section)
   self:iterator( function(c)
     if c.section == section then
       c:fadeOut(function()
         c:reset()
-        c:createGraphics()
+        c:createGraphics(0) -- blank so alpha doesn't matter
       end)
     end
   end )
-end
-
-function Grid:isRowEmpty(row)
-  local c = self:findCell(1,row)
-  local coins = 0
-  while c do
-    coins = coins + c.coins
-    c = c.e
-  end
-  return coins == 0
-end
-
-function Grid:rollDown()
-  local cRow = self:findCell(1, self.height)
-  while cRow.n do
-    local c = cRow
-    while c do
-      c.coins = c.n.coins
-      c.bitCount = c.n.bitCount
-      c.color = c.n.color
-      c.section = c.n.section
-      c:createGraphics()
-      c.n:reset()
-      c = c.e
-    end
-    cRow = cRow.n
-  end
 end
 
 function Grid:colorComplete()
