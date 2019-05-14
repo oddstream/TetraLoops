@@ -204,8 +204,7 @@ function Grid:jumbleCoins()
 end
 
 function Grid:isComplete()
-  local arr = table.filter(self.cells, function(c) return c.section ~= 0 end)
-  return #arr == 0
+  return table.find(self.cells, function(c) return c.coins ~= 0 end) == nil
 end
 
 function Grid:isSectionComplete(section)
@@ -225,28 +224,24 @@ function Grid:removeSection(section)
   -- print('remove section', section)
   self:iterator( function(c)
     if c.section == section then
-      c:fadeOut(function()
-        c:reset()
-        c:createGraphics(0) -- blank so alpha doesn't matter
-      end)
+      c:fadeOut()
+      timer.performWithDelay(1000, function() c:reset() end, 1)
     end
   end )
-end
-
-function Grid:colorComplete()
-  self:iterator( function(c) c:colorComplete() end )
 end
 
 function Grid:fadeIn()
   self:iterator( function(c) c:fadeIn() end )
 end
 
-function Grid:fadeOut()
-  self:iterator( function(c) c:fadeOut() end )
-end
+-- function Grid:fadeOut()
+--   self:iterator( function(c) c:fadeOut() end )
+-- end
 
 function Grid:destroy()
-  audio.stop()  -- stop all channels
+  local nStopped = audio.stop()  -- stop all channels
+  print('audio stop', nStopped)
+
   if self.sectionSound then
     audio.dispose(self.sectionSound)
     self.sectionSound = nil

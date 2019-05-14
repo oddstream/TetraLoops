@@ -80,9 +80,9 @@ function scene:create(event)
   sceneGroup:insert(scrollView)
 ]]
   if system.getInfo('platform') == 'win32' then
-    dimensions = Dim:new(50)
+    dimensions = Dim:new(100)
   else
-    dimensions = Dim:new(150)
+    dimensions = Dim:new(200)
   end
 
   -- for debugging the gaps between cells problem

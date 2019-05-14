@@ -21,7 +21,7 @@ local Cell = {
 
   square = nil,     -- ShapeObject for outline
   grp = nil,        -- display group to put shapes in
-  grpObjects = nil, -- list of ShapeObject for coloring
+  grpObjects = nil, -- list of ShapeObject for fading
 }
 
 function Cell:new(grid, x, y)
@@ -182,27 +182,6 @@ function Cell:colorConnected(color, section)
   end
 end
 
-function Cell:colorComplete()
---[[
-  When you modify a group's properties, all of its children are affected. 
-  For example, if you set the alpha property on a display group, 
-  each child's alpha value is multiplied by the new alpha of the group. 
-  Groups automatically detect when a child's properties have changed 
-  (position, rotation, etc.). Thus, on the next render pass, the child will re-render.
-]]
-  self.color = {1,1,1}
-  if self.grpObjects then
-    for _, o in ipairs(self.grpObjects) do
-      if o.setStrokeColor then
-        o:setStrokeColor(unpack(self.color))
-      end
-      if o.setFillColor then
-        o:setFillColor(unpack(self.color))
-      end
-    end
-  end
-end
-
 function Cell:rotate(dir)
 
   local function afterRotate()
@@ -239,8 +218,8 @@ end
 
 function Cell:tap(event)
   -- implement table listener for tap events
-  -- print('tap', event.phase, event.numTaps, self.x, self.y, self.coins, self.bitCount)
   if self.grid:isComplete() then
+    -- print('completed', event.name, event.numTaps, self.x, self.y, self.coins, self.bitCount)
     self.grid:reset()
   else
     self:rotate('clockwise')
@@ -282,8 +261,8 @@ function Cell:createGraphics(alpha)
     local cd = table.find(dim.cellData, function(b) return self.coins == b.bit end)
     assert(cd)
     local line = display.newLine(self.grp,
-      cd.c2eX / 2,
-      cd.c2eY / 2,
+      cd.c2eX / 2.5,
+      cd.c2eY / 2.5,
       cd.c2eX,
       cd.c2eY)
     line.strokeWidth = sWidth
@@ -360,15 +339,17 @@ end
 function Cell:fadeIn()
   if self.grpObjects then
     for _, o in ipairs(self.grpObjects) do
-      transition.fadeIn(o, {time=500});
+      transition.fadeIn(o, {time=1000});
+      -- o.alpha = 1
     end
   end
 end
 
-function Cell:fadeOut(fn)
+function Cell:fadeOut()
   if self.grpObjects then
     for _, o in ipairs(self.grpObjects) do
-      transition.fadeOut(o, {time=500, onComplete=fn});
+      transition.fadeOut(o, {time=1000});
+      -- o.alpha = 0
     end
   end
 end
