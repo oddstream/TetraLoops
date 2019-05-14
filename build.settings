@@ -10,11 +10,11 @@ settings =
   window =
   {
     defaultMode = 'normal',
-    defaultViewWidth = 480,
-    defaultViewHeight = 480 * 16 / 9,
+    defaultViewWidth = 640,
+    defaultViewHeight = 480,
     resizable = true,
-    minViewWidth = 480,
-    minViewHeight = 480 * 16 / 9,
+    minViewWidth = 640,
+    minViewHeight = 480,
     enableCloseButton = true,
     enableMinimizeButton = true,
     suspendWhenMinimized = true,

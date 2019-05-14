@@ -3,22 +3,15 @@
 local Dim = {
   Q = nil,
 
-  W = nil,
-  W75 = nil,
-  W50 = nil,
-  W25 = nil,
-
-  H = nil,
-  H75 = nil,
-  H50 = nil,
-  H25 = nil,
-
   Q50 = nil,
-  Q33 = nil,
   Q20 = nil,
-  Q16 = nil,
   Q10 = nil,
-  Q8 = nil,
+
+  numX = nil,
+  numY = nil,
+
+  marginX = nil,
+  marginY = nil,
 
   NORTH = 1,
   EAST = 2,
@@ -27,13 +20,11 @@ local Dim = {
 
   MASK = 15,
 
+  PLACE_COIN_CHANCE = 0.2,
+
   cellData = nil,
   cellSquare = nil,
 }
-
--- https://www.redblobgames.com/grids/hexagons/
--- when packed, 2 hex occupy 1.5 wide, not 2
--- and in pointy top, 2 vertical occupy 1.75, not 2
 
 function Dim:new(Q)
   local o = {}
@@ -43,17 +34,20 @@ function Dim:new(Q)
   o.Q = Q
 
   o.Q50 = math.floor(Q/2)
-  o.Q33 = math.floor(Q/3.333333)
   o.Q20 = math.floor(Q/5)
-  o.Q16 = math.floor(Q*0.16)
   o.Q10 = math.floor(Q/10)
-  o.Q8 = math.floor(Q*0.08)
+
+  o.numX = math.floor(display.actualContentWidth / Q)
+  o.numY = math.floor(display.actualContentHeight / Q)
+
+  o.marginX = (display.actualContentWidth - (o.numX * Q)) / 2
+  o.marginY = (display.actualContentHeight - (o.numY * Q)) / 2
 
   o.cellData = {
-    { bit=o.NORTH,  oppBit=o.SOUTH,   link='n',  c2eX=0,      c2eY=-o.Q50, },
-    { bit=o.EAST,   oppBit=o.WEST,    link='e',  c2eX=o.Q50,  c2eY=0,    },
-    { bit=o.SOUTH,  oppBit=o.NORTH,   link='s',  c2eX=0,      c2eY=o.Q50,  },
-    { bit=o.WEST,   oppBit=o.EAST,    link='w',  c2eX=-o.Q50, c2eY=0,    },
+    { bit=o.NORTH,  oppBit=o.SOUTH,   link='n',  c2eX=0,      c2eY=-o.Q50,  },
+    { bit=o.EAST,   oppBit=o.WEST,    link='e',  c2eX=o.Q50,  c2eY=0,       },
+    { bit=o.SOUTH,  oppBit=o.NORTH,   link='s',  c2eX=0,      c2eY=o.Q50,   },
+    { bit=o.WEST,   oppBit=o.EAST,    link='w',  c2eX=-o.Q50, c2eY=0,       },
   }
 
   o.cellSquare = {

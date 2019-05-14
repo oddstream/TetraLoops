@@ -79,18 +79,16 @@ function scene:create(event)
   -- scrollView.anchorY = 0
   sceneGroup:insert(scrollView)
 ]]
-  local QQQ = 150
-
-  local numX = math.floor(display.actualContentWidth / QQQ)
-  local numY = math.floor(display.actualContentHeight / QQQ)
-
-  dimensions = Dim:new( QQQ )
-  -- dimensions = Dim:new( math.floor(display.viewableContentWidth/numX) )
+  if system.getInfo('platform') == 'win32' then
+    dimensions = Dim:new(50)
+  else
+    dimensions = Dim:new(150)
+  end
 
   -- for debugging the gaps between cells problem
   -- display.setDefault('background', 0.5,0.5,0.5)
 
-  grid = Grid:new(gridGroup, numX, numY)
+  grid = Grid:new(gridGroup, dimensions.numX, dimensions.numY)
 
   grid:newLevel()
 

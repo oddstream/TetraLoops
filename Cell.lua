@@ -3,7 +3,6 @@
 local bit = require('plugin.bit')
 local bezier = require('Bezier')
 
-local PLACE_COIN_CHANCE = 0.2
 local SHOW_SQUARE = false
 
 local Cell = {
@@ -38,13 +37,15 @@ function Cell:new(grid, x, y)
 
   -- calculate where the screen coords center point will be
   o.center = {x=(x*dim.Q) - dim.Q + dim.Q50, y=(y*dim.Q) - dim.Q + dim.Q50}
+  o.center.x = o.center.x + dim.marginX
+  o.center.y = o.center.y + dim.marginY
 
   -- "These coordinates will automatically be re-centered about the center of the polygon."
   o.square = display.newPolygon(o.grid.group, o.center.x, o.center.y, dim.cellSquare)
   o.square:setFillColor(0,0,0) -- if alpha == 0, we don't get tap events
   if SHOW_SQUARE then
     o.square:setStrokeColor(0.1)
-    o.square.strokeWidth = 2
+    o.square.strokeWidth = 4
   end
 
   o.square:addEventListener('tap', o) -- table listener
@@ -152,7 +153,7 @@ function Cell:placeCoin()
   local dim = dimensions
 
   for _,cd in ipairs(dim.cellData) do
-    if math.random() < PLACE_COIN_CHANCE then
+    if math.random() < dim.PLACE_COIN_CHANCE then
       if self[cd.link] then
         self.coins = bit.bor(self.coins, cd.bit)
         self[cd.link].coins = bit.bor(self[cd.link].coins, cd.oppBit)
@@ -258,13 +259,7 @@ function Cell:createGraphics(alpha)
   -- blue={0,0,1}
   -- print(table.unpack(blue), 3)
   --> 0 6
---[[
-  local colora = {}
-  for k,v in pairs(self.color) do colora[k] = v end
-  assert(#colora==3)
-  table.insert(colora, alpha)
-  assert(#colora==4)
-]]
+
   if self.grp then
     self.grp:removeSelf()
     self.grp = nil
@@ -309,21 +304,6 @@ function Cell:createGraphics(alpha)
     table.insert(self.grpObjects, circle)
 
   else
-    -- until Bezier curves, just draw a line from coin-bit-edge to center
-    --[[
-    for _,cd in ipairs(dim.cellData) do
-      if bit.band(cd.bit, self.coins) == cd.bit then
-        local line = display.newLine(self.grp,
-        0,
-        0, 
-        cd.c2eX,
-        cd.c2eY)
-        line.strokeWidth = dim.Q10
-      end
-    end
-    ]]
-    -- make a list of edge coords we need to visit
-
 --[[
   with self.bitCount > 3
   three consective bits should produce same pattern (rotated) no matter where they occur in coins:
@@ -335,19 +315,14 @@ function Cell:createGraphics(alpha)
     100011 - ugly
   hence self.bitCount > 2
 ]]
+    -- make a list of edge coords we need to visit
     local arr = {}
     for _,cd in ipairs(dim.cellData) do
       if bit.band(self.coins, cd.bit) == cd.bit then
         table.insert(arr, {x=cd.c2eX, y=cd.c2eY})
       end
     end
---[[
-    for n = 1, #arr do
-      local circ = display.newCircle(self.grp, arr[n].x, arr[n].y, dim.Q20)
-      circ:setFillColor(unpack(self.color))
-      table.insert(self.grpObjects, circ)
-    end
-]]
+
     -- close path for better aesthetics
     if self.bitCount > 2 then
       table.insert(arr, arr[1])

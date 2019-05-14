@@ -16,7 +16,7 @@ application =
     -- height = 1920,
     -- width = 720,
     -- height = 1280,
-    -- scale = 'letterbox',  -- zoomEven, letterbox, adaptive
+    -- scale = 'zoomEven',  -- zoomEven, letterbox, adaptive
     fps = 30,
   },
 }
