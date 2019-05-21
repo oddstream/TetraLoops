@@ -2,6 +2,7 @@
 
 local Dim = require 'Dim'
 local Grid = require 'Grid'
+local GameState = require 'GameState'
 
 local physics = require 'physics'
 physics.start()
@@ -89,7 +90,7 @@ function scene:create(event)
   -- display.setDefault('background', 0.5,0.5,0.5)
 
   grid = Grid:new(gridGroup, dimensions.numX, dimensions.numY)
-
+  grid.gameState = GameState:new()
   grid:newLevel()
 
 end

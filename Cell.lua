@@ -221,6 +221,7 @@ function Cell:tap(event)
   if self.grid:isComplete() then
     -- print('completed', event.name, event.numTaps, self.x, self.y, self.coins, self.bitCount)
     self.grid:reset()
+    self.grid:advanceLevel()
   else
     self:rotate('clockwise')
   end

@@ -14,6 +14,9 @@ local Grid = {
   tapSound = nil,
   sectionSound = nil,
   lockedSound = nil,
+
+  gameState = nil,
+  levelText = nil,
 }
 
 function Grid:new(group, width, height)
@@ -39,6 +42,15 @@ function Grid:new(group, width, height)
   -- o.tapSound = audio.loadSound('sound56.wav')
   -- o.sectionSound = audio.loadSound('sound63.wav')
   -- o.lockedSound = audio.loadSound('sound61.wav')
+
+  o.levelText = display.newText({
+    parent=group,
+    text='',
+    x=display.contentCenterX,
+    y=display.contentCenterY,
+    font=native.systemFontBold,
+    fontSize=512})
+  o.levelText:setFillColor(0.1,0.1,0.1)
 
   return o
 end
@@ -70,7 +82,17 @@ function Grid:newLevel()
   self:jumbleCoins()
   self:createGraphics()
 
+  self.levelText.text = tostring(self.gameState.level)
+
   self:fadeIn()
+end
+
+function Grid:advanceLevel()
+  assert(self.gameState)
+  assert(self.gameState.level)
+  self.gameState.level = self.gameState.level + 1
+  self.levelText.text = tostring(self.gameState.level)
+  self.gameState:write()
 end
 
 function Grid:sound(type)
