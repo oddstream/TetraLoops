@@ -25,7 +25,7 @@ local Cell = {
 }
 
 function Cell:new(grid, x, y)
-  local dim = dimensions
+  local dim = _G.dimensions
 
   local o = {}
   self.__index = self
@@ -84,7 +84,7 @@ function Cell:calcHammingWeight()
 end
 
 function Cell:shiftBits(num)
-  local dim = dimensions
+  local dim = _G.dimensions
 
   num = num or 1
   while num > 0 do
@@ -101,12 +101,12 @@ function Cell:shiftBits(num)
 end
 
 function Cell:unshiftBits(num)
-  local dim = dimensions
+  local dim = _G.dimensions
 
   local function unshift(n)
     if bit.band(n, 1) == 1 then
       n = bit.rshift(n, 1)
-      n = bit.bor(n , dim.WEST)
+      n = bit.bor(n, dim.WEST)
     else
       n = bit.rshift(n, 1)
     end
@@ -127,7 +127,7 @@ function Cell:unshiftBits(num)
 end
 
 function Cell:isComplete(section)
-  local dim = dimensions
+  local dim = _G.dimensions
 
   if section and self.section ~= section then
     return false
@@ -150,7 +150,7 @@ function Cell:isComplete(section)
 end
 
 function Cell:placeCoin()
-  local dim = dimensions
+  local dim = _G.dimensions
 
   for _,cd in ipairs(dim.cellData) do
     if math.random() < dim.PLACE_COIN_CHANCE then
@@ -167,7 +167,7 @@ function Cell:jumbleCoin()
 end
 
 function Cell:colorConnected(color, section)
-  local dim = dimensions
+  local dim = _G.dimensions
 
   self.color = color
   self.section = section
@@ -220,6 +220,7 @@ function Cell:tap(event)
   -- implement table listener for tap events
   if self.grid:isComplete() then
     -- print('completed', event.name, event.numTaps, self.x, self.y, self.coins, self.bitCount)
+    self.grid:sound('complete')
     self.grid:reset()
     self.grid:advanceLevel()
   else
@@ -228,8 +229,13 @@ function Cell:tap(event)
   return true
 end
 
-function Cell:createGraphics(alpha)
-  local dim = dimensions
+function Cell:createGraphics(scale)
+  local dim = _G.dimensions
+
+  scale = scale or 1
+
+  assert(self.grid.backgroundColor)
+  self.square:setFillColor(unpack(self.grid.backgroundColor))
 
   if 0 == self.coins then
     return
@@ -254,8 +260,8 @@ function Cell:createGraphics(alpha)
 
   self.grpObjects = {}
 
-  local sWidth = dim.Q10
-  local capRadius = math.floor(sWidth/2)
+  local sWidth = dim.Q / 7 --dim.Q10
+  local capRadius = sWidth / 2
 
   if self.bitCount == 1 then
 
@@ -268,19 +274,23 @@ function Cell:createGraphics(alpha)
       cd.c2eY)
     line.strokeWidth = sWidth
     line:setStrokeColor(unpack(self.color))
-    line.alpha = alpha
+    line.alpha = 1
+    line.xScale, line.yScale = scale, scale
     table.insert(self.grpObjects, line)
 
     local endcap = display.newCircle(self.grp, cd.c2eX, cd.c2eY, capRadius)
     endcap:setFillColor(unpack(self.color))
-    endcap.alpha = alpha
+    endcap.alpha = 1
+    endcap.xScale, endcap.yScale = scale, scale
     table.insert(self.grpObjects, endcap)
 
     local circle = display.newCircle(self.grp, 0, 0, dim.Q20)
     circle.strokeWidth = sWidth
     circle:setStrokeColor(unpack(self.color))
-    circle:setFillColor(0,0,0)
-    circle.alpha = alpha
+    circle:setFillColor(unpack(self.grid.backgroundColor))
+    circle.alpha = 1
+    circle.xScale, circle.yScale = scale, scale
+
     table.insert(self.grpObjects, circle)
 
   else
@@ -322,7 +332,8 @@ function Cell:createGraphics(alpha)
       local curveDisplayObject = curve:get()
       curveDisplayObject.strokeWidth = sWidth
       curveDisplayObject:setStrokeColor(unpack(self.color))
-      curveDisplayObject.alpha = alpha
+      curveDisplayObject.alpha = 1
+      curveDisplayObject.xScale,curveDisplayObject.yScale = scale, scale
       self.grp:insert(curveDisplayObject)
       table.insert(self.grpObjects, curveDisplayObject)
     end
@@ -330,7 +341,8 @@ function Cell:createGraphics(alpha)
     for n = 1, #arr do
       local endcap = display.newCircle(self.grp, arr[n].x, arr[n].y, capRadius)
       endcap:setFillColor(unpack(self.color))
-      endcap.alpha = alpha
+      endcap.alpha = 1
+      endcap.xScale, endcap.yScale = scale, scale
       table.insert(self.grpObjects, endcap)
     end
 
@@ -340,8 +352,7 @@ end
 function Cell:fadeIn()
   if self.grpObjects then
     for _, o in ipairs(self.grpObjects) do
-      transition.fadeIn(o, {time=1000});
-      -- o.alpha = 1
+      transition.scaleTo(o, {xScale=1, yScale=1, time=500});
     end
   end
 end
@@ -349,8 +360,7 @@ end
 function Cell:fadeOut()
   if self.grpObjects then
     for _, o in ipairs(self.grpObjects) do
-      transition.fadeOut(o, {time=1000});
-      -- o.alpha = 0
+      transition.scaleTo(o, {xScale=0.1, yScale=0.1, time=500});
     end
   end
 end

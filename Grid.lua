@@ -3,6 +3,7 @@
 local composer = require('composer')
 
 local Cell = require 'Cell'
+local Util = require 'Util'
 
 local Grid = {
   -- prototype object
@@ -39,9 +40,12 @@ function Grid:new(group, width, height)
 
   o:linkCells2()
 
-  -- o.tapSound = audio.loadSound('sound56.wav')
-  -- o.sectionSound = audio.loadSound('sound63.wav')
-  -- o.lockedSound = audio.loadSound('sound61.wav')
+  if system.getInfo('environment') ~= 'simulator' then
+    o.tapSound = audio.loadSound('assets/sound56.wav')
+    o.sectionSound = audio.loadSound('assets/sound63.wav')
+    o.lockedSound = audio.loadSound('assets/sound61.wav')
+    o.completeSound = audio.loadSound('assets/complete.wav')
+  end
 
   o.levelText = display.newText({
     parent=group,
@@ -50,7 +54,8 @@ function Grid:new(group, width, height)
     y=display.contentCenterY,
     font=native.systemFontBold,
     fontSize=512})
-  o.levelText:setFillColor(0.1,0.1,0.1)
+  o.levelText:setFillColor(0,0,0)
+  o.levelText.alpha = 0.1
 
   return o
 end
@@ -77,6 +82,10 @@ function Grid:reset()
 end
 
 function Grid:newLevel()
+
+  self.colors, self.backgroundColor = Util.chooseColors()
+  display.setDefault("background", unpack(self.backgroundColor))
+
   self:placeCoins()
   self:colorCoins()
   self:jumbleCoins()
@@ -102,6 +111,8 @@ function Grid:sound(type)
     if self.sectionSound then audio.play(self.sectionSound) end
   elseif type == 'locked' then
     if self.lockedSound then audio.play(self.lockedSound) end
+  elseif type == 'complete' then
+    if self.lockedSound then audio.play(self.completeSound) end
   end
 end
 
@@ -135,7 +146,7 @@ function Grid:randomCell()
 end
 
 function Grid:createGraphics()
-  self:iterator(function(c) c:createGraphics(0) end)
+  self:iterator(function(c) c:createGraphics(0.1) end)
 end
 
 function Grid:placeCoins()
@@ -144,76 +155,13 @@ function Grid:placeCoins()
 end
 
 function Grid:colorCoins()
-  -- https://en.wikipedia.org/wiki/Web_colors
-  local colorsGreen = {
-    {0,100,0},  -- DarkGreen
-    {85,107,47},  -- DarkOliveGreen
-    {107,142,35},  -- OliveDrab
-    {139,69,19},  -- SaddleBrown
-    {80,80,0},  -- Olive
-    {154,205,50},  -- YellowGreen
-    {46,139,87}, -- SeaGreen
-    {128,128,128},
-  }
-
-  local colorsPink = {
-    {255,192,203}, -- Pink
-    {255,105,180}, -- HotPink
-    {219,112,147}, -- PaleVioletRed
-    {255,20,147},  -- DeepPink
-    {199,21,133},  -- MediumVioletRed
-
-    {238,130,238}, -- Violet
-  }
-
-  local colorsBlue = {
-    {25,25,112},
-    {65,105,225},
-    {30,144,255},
-    {135,206,250},
-    {176,196,222},
-    {0,0,205},
-  }
-
-  local colorsOrange = {
-    {255,165,0},
-    {255,69,0},
-    {255,127,80},
-    {255,140,0},
-    {255,99,71},
-    {128,128,128},
-  }
-
-  local colorsGray = {
-    {128,128,128},
-    {192,192,192},
-    {112,128,144},
-    {220,220,220},
-    {49,79,79},
-  }
-
-  local colorsAll = {
-    colorsGreen,
-    colorsBlue,
-    colorsOrange,
-    colorsPink,
-    colorsGray,
-  }
-
-  local colors = colorsAll[math.random(#colorsAll)]
-  for _,row in ipairs(colors) do
-    for i = 1,3 do
-      row[i] = row[i] * 4 / 1020
-    end
-  end
-
   local nColor = 1
   local section = 1
   local c = table.find(self.cells, function(d) return d.coins ~= 0 and d.color == nil end)
   while c do
-    c:colorConnected(colors[nColor], section)
+    c:colorConnected(self.colors[nColor], section)
     nColor = nColor + 1
-    if nColor > #colors then
+    if nColor > #self.colors then
       nColor = 1
     end
     section = section + 1

@@ -81,15 +81,15 @@ function scene:create(event)
   sceneGroup:insert(scrollView)
 ]]
   if system.getInfo('platform') == 'win32' then
-    dimensions = Dim:new(100)
+    _G.dimensions = Dim:new(100)
   else
-    dimensions = Dim:new(200)
+    _G.dimensions = Dim:new(200)
   end
 
   -- for debugging the gaps between cells problem
   -- display.setDefault('background', 0.5,0.5,0.5)
 
-  grid = Grid:new(gridGroup, dimensions.numX, dimensions.numY)
+  grid = Grid:new(gridGroup, _G.dimensions.numX, _G.dimensions.numY)
   grid.gameState = GameState:new()
   grid:newLevel()
 

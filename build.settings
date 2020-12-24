@@ -7,6 +7,25 @@ settings =
       publisherId = "com.coronalabs"
     },
   },
+
+  splashScreen = 
+  {
+    android = {
+      enable = false
+    }
+  },
+
+  android =
+  {
+    minSdkVersion = '16',
+  },
+
+  orientation =
+  {
+    default = "portrait",
+    supported = {"portrait"}, -- don't allow orientation change
+  },
+
   window =
   {
     defaultMode = 'normal',

@@ -51,10 +51,10 @@ function Dim:new(Q)
   }
 
   o.cellSquare = {
-    -o.Q50, -o.Q50,   -- top left
-    o.Q50, -o.Q50,    -- top right
-    o.Q50, o.Q50,     -- bottom right
-    -o.Q50, o.Q50,    -- bottom left
+    -o.Q50, -o.Q50, -- top left
+     o.Q50, -o.Q50, -- top right
+     o.Q50,  o.Q50, -- bottom right
+    -o.Q50,  o.Q50, -- bottom left
   }
 
   return o

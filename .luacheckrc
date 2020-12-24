@@ -14,6 +14,7 @@ local coronaAPI = {
   'print',
   'require',
   'package',
+  'table',
  }
 
 max_line_length = false
